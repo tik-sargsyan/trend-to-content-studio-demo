@@ -307,10 +307,37 @@ p{text-wrap:pretty}
   .brand-switch select{min-height:44px}
 }
 
+/* ---------- imagery + motion (reuse generated assets, no new images) ---------- */
+.tcard{padding:0}
+.tcard-img{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--panel-2)}
+.tcard-img img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.04);
+  transition:opacity .6s var(--e-out), transform .6s var(--e-out)}
+.tcard-img img.in{opacity:1;transform:scale(1)}
+.tcard:hover .tcard-img img{transform:scale(1.06)}
+.tcard-pill{position:absolute;top:10px;right:10px;backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.tcard-body{padding:18px}
+.asset-frame{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--panel-2)}
+.asset-frame img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .6s var(--e-out)}
+.asset-frame img.in{opacity:1}
+.asset-tall{aspect-ratio:4/5;margin-bottom:18px}
+.reach-thumb{width:90px;flex:none;aspect-ratio:4/5;border-radius:14px;overflow:hidden;border:1px solid var(--line-2);background:var(--panel-2)}
+.reach-thumb img,.head-thumb img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s var(--e-out)}
+.reach-thumb img.in,.head-thumb img.in{opacity:1}
+.head-row{display:flex;justify-content:space-between;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.head-row>div:first-child{flex:1;min-width:260px}
+.head-thumb{width:128px;flex:none;aspect-ratio:4/5;border-radius:16px;overflow:hidden;border:1px solid var(--line-2);background:var(--panel-2)}
+.ov-samples{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;margin-top:14px}
+.ov-sample{aspect-ratio:4/5;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--panel-2)}
+.ov-sample img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.04);transition:opacity .6s var(--e-out),transform .6s var(--e-out)}
+.ov-sample img.in{opacity:1;transform:scale(1)}
+.ov-sample:hover img{transform:scale(1.07)}
+@media(max-width:520px){.head-thumb{display:none}}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
     transition-duration:.01ms !important;scroll-behavior:auto !important}
   .bar i{transform:scaleX(1)}
+  .tcard-img img,.asset-frame img,.reach-thumb img,.head-thumb img,.ov-sample img{opacity:1;transform:none}
 }
 
 #genBtn{display:none}

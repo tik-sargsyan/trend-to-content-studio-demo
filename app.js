@@ -76,8 +76,10 @@ async function render() {
   if (S.step === 5) return renderResults();
 }
 
-function renderOverview() {
+async function renderOverview() {
   const b = S.brands[S.brand];
+  let samples = [];
+  try { const sr = await api(`/api/trends?brand=${S.brand}`); samples = sr.trends.filter(t => t.gen_url).slice(0, 5).map(t => t.gen_url); } catch (e) {}
   const I = {
     trends: '<path d="M5 19V11M12 19V5M19 19V14" stroke-linecap="round"/>',
     score: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/>',
@@ -98,6 +100,8 @@ function renderOverview() {
     <div class="flow">
       ${steps.map(s => `<div class="flow-step" style="--c:${s[0]}"><div class="badge"><svg viewBox="0 0 24 24" aria-hidden="true">${s[1]}</svg></div><h4>${s[2]}</h4><p>${s[3]}</p></div>`).join("")}
     </div>
+    ${samples.length ? `<div class="section-head"><h2>What it produces</h2><span class="hint">real AI-generated assets</span></div>
+    <div class="ov-samples">${samples.map(u => `<div class="ov-sample"><img src="${u}" alt="" loading="lazy" onload="this.classList.add('in')"></div>`).join("")}</div>` : ""}
     <div class="ov-foot">
       <p class="ov-line">From identifying a trend to a finished campaign in <b>under 2 hours</b>, often <b>15 minutes</b>.</p>
       <button class="cta" id="startBtn">Find trends for ${b.name}</button>
@@ -136,14 +140,20 @@ async function renderTrends() {
     el.style.setProperty("--i", Math.min(i, 8));
     el.className = "tcard" + (t.recommendation === "SKIP" ? " muted" : "");
     el.setAttribute("aria-label", `${t.name}, fit score ${t.total} of 100, ${t.recommendation}. Open.`);
+    const img = t.gen_url
+      ? `<div class="tcard-img"><img src="${t.gen_url}" alt="" loading="lazy" onload="this.classList.add('in')"><span class="pill ${t.recommendation} tcard-pill">${t.recommendation}</span></div>`
+      : "";
     el.innerHTML = `
-      <h3>${t.name}</h3>
-      <div class="plats">${t.platforms.join(", ")}. ${t.emerged}.</div>
-      <div class="sum">${t.summary}</div>
-      <div class="dataline">${t.signal.views_30d} views, ${t.signal.outlier} outlier, ${t.signal.growth}</div>
-      <div class="tcard-foot">
-        <div class="score-num"><b data-to="${t.total}">0</b><span>/100 fit</span></div>
-        <span class="pill ${t.recommendation}">${t.recommendation}</span>
+      ${img}
+      <div class="tcard-body">
+        <h3>${t.name}</h3>
+        <div class="plats">${t.platforms.join(", ")}. ${t.emerged}.</div>
+        ${t.gen_url ? "" : `<div class="sum">${t.summary}</div>`}
+        <div class="dataline">${t.signal.views_30d} views, ${t.signal.outlier} outlier, ${t.signal.growth}</div>
+        <div class="tcard-foot">
+          <div class="score-num"><b data-to="${t.total}">0</b><span>/100 fit</span></div>
+          ${t.gen_url ? "" : `<span class="pill ${t.recommendation}">${t.recommendation}</span>`}
+        </div>
       </div>`;
     el.onclick = () => pickTrend(t.id);
     g.appendChild(el);
@@ -177,6 +187,7 @@ function renderScore() {
         <p class="formula">Weighted: brand fit 30%, growth 25%, audience 20%, feasibility 15%, timing 10%.</p>
       </div>
       <div>
+        ${S.genUrl ? `<div class="asset-frame asset-tall"><img src="${S.genUrl}" alt="Generated asset for ${t.name}" onload="this.classList.add('in')"></div>` : ""}
         <div class="totalbox">
           <div><div class="big" id="bigScore">0</div><div class="lbl">out of 100</div></div>
           <span class="pill ${t.recommendation}">${t.recommendation}</span>
@@ -282,6 +293,7 @@ async function renderCreators() {
     <p class="lead">The campaign launches through Picsart Earn creators who post to their own audiences, so it reads as real content, not an ad. You stay in front of ${b.name}.</p>
     <div class="channels">${channels.map(ch => `<span class="chan"><span class="cdot" aria-hidden="true"></span>${ch}</span>`).join("")}</div>
     <div class="reach-hero" style="margin-top:20px">
+      ${S.genUrl ? `<div class="reach-thumb"><img src="${S.genUrl}" alt="" onload="this.classList.add('in')"></div>` : ""}
       <div><div class="num" id="reach">0</div><div class="lbl">Projected reach, first wave</div></div>
       <div class="cap">${r.creator_count} matched creators across ${channels.join(", ")}. You pay per post.</div>
     </div>
@@ -309,9 +321,14 @@ function renderResults() {
   const t = S.trend, b = S.brands[S.brand];
   const agency = S.agency || "your agency";
   view.innerHTML = `
-    <h1 class="h1">Results you can track</h1>
-    <p class="lead">Once the campaign is live, every post produces real, measurable performance. Below is what a launch looks like, and exactly how we measure it.</p>
-    <div class="example-tag">Example results, not live data</div>
+    <div class="head-row">
+      <div>
+        <h1 class="h1">Results you can track</h1>
+        <p class="lead">Once the campaign is live, every post produces real, measurable performance. Below is what a launch looks like, and exactly how we measure it.</p>
+        <div class="example-tag">Example results, not live data</div>
+      </div>
+      ${S.genUrl ? `<div class="head-thumb"><img src="${S.genUrl}" alt="" onload="this.classList.add('in')"></div>` : ""}
+    </div>` + `
     <div class="metricrow" style="margin-top:12px">
       <div class="m"><div class="mv" data-to="1400000">0</div><div class="ml">Views, first week</div><div class="md">across all creator posts</div></div>
       <div class="m"><div class="mv" data-to="86" data-suf="K">0</div><div class="ml">Engagements</div><div class="md">likes, comments, shares, saves</div></div>
